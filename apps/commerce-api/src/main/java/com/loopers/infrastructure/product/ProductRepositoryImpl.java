@@ -28,12 +28,15 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<ProductModel> findAll(SortType sortType) {
+    public List<ProductModel> findAll(SortType sortType, Long brandId) {
         Sort sort = switch (sortType) {
             case LATEST     -> Sort.by(Sort.Direction.DESC, "createdAt");
             case PRICE_ASC  -> Sort.by(Sort.Direction.ASC, "price");
             case LIKES_DESC -> Sort.by(Sort.Direction.DESC, "likeCount");
         };
+        if (brandId != null) {
+            return productJpaRepository.findAllByDeletedAtIsNullAndBrandId(brandId, sort);
+        }
         return productJpaRepository.findAllByDeletedAtIsNull(sort);
     }
 

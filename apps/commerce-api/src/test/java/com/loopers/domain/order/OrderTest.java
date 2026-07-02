@@ -27,7 +27,7 @@ class OrderTest {
         @DisplayName("유효한 항목이 있으면 PAID 상태로 생성된다.")
         @Test
         void creates_withPaidStatus() {
-            Order order = new Order(1L, singleItem());
+            Order order = new Order(1L, null, 100000L, 0L, 100000L, singleItem());
             assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
             assertThat(order.getItems()).hasSize(1);
         }
@@ -36,7 +36,7 @@ class OrderTest {
         @Test
         void throwsBadRequest_whenItemsEmpty() {
             CoreException result = assertThrows(CoreException.class,
-                () -> new Order(1L, List.of()));
+                () -> new Order(1L, null, 0L, 0L, 0L, List.of()));
             assertThat(result.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
         }
 
@@ -44,7 +44,7 @@ class OrderTest {
         @Test
         void throwsBadRequest_whenItemsNull() {
             CoreException result = assertThrows(CoreException.class,
-                () -> new Order(1L, null));
+                () -> new Order(1L, null, 0L, 0L, 0L, null));
             assertThat(result.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
         }
     }
@@ -56,7 +56,7 @@ class OrderTest {
         @DisplayName("PAID 상태이면 CANCELLED로 전이된다.")
         @Test
         void cancels_whenPaid() {
-            Order order = new Order(1L, singleItem());
+            Order order = new Order(1L, null, 100000L, 0L, 100000L, singleItem());
             order.cancel();
             assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         }
@@ -64,7 +64,7 @@ class OrderTest {
         @DisplayName("이미 취소된 주문을 다시 취소하면 BAD_REQUEST 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenAlreadyCancelled() {
-            Order order = new Order(1L, singleItem());
+            Order order = new Order(1L, null, 100000L, 0L, 100000L, singleItem());
             order.cancel();
 
             CoreException result = assertThrows(CoreException.class, order::cancel);
@@ -79,14 +79,14 @@ class OrderTest {
         @DisplayName("본인 주문이면 true를 반환한다.")
         @Test
         void returnsTrue_whenOwner() {
-            Order order = new Order(1L, singleItem());
+            Order order = new Order(1L, null, 100000L, 0L, 100000L, singleItem());
             assertThat(order.belongsTo(1L)).isTrue();
         }
 
         @DisplayName("타인 주문이면 false를 반환한다.")
         @Test
         void returnsFalse_whenNotOwner() {
-            Order order = new Order(1L, singleItem());
+            Order order = new Order(1L, null, 100000L, 0L, 100000L, singleItem());
             assertThat(order.belongsTo(2L)).isFalse();
         }
     }

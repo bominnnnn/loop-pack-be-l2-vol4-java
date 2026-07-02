@@ -1,5 +1,6 @@
 package com.loopers.application.like;
 
+import com.loopers.application.product.ProductFacade;
 import com.loopers.application.product.ProductInfo;
 import com.loopers.domain.brand.Brand;
 import com.loopers.domain.brand.BrandReader;
@@ -24,19 +25,22 @@ public class LikeFacade {
     private final ProductReader productReader;
     private final ProductStockService productStockService;
     private final BrandReader brandReader;
+    private final ProductFacade productFacade;
 
     @Transactional
     public void addLike(Long userId, Long productId) {
-        productReader.getProduct(productId);          // 상품 존재 확인
+        productReader.getProduct(productId);
         likeService.addLike(userId, productId);
-        productService.increaseLikeCount(productId);  // @Modifying으로 원자 업데이트
+        productService.increaseLikeCount(productId);
+        productFacade.evictProductCache(productId);
     }
 
     @Transactional
     public void removeLike(Long userId, Long productId) {
-        productReader.getProduct(productId);          // 상품 존재 확인
+        productReader.getProduct(productId);
         likeService.removeLike(userId, productId);
         productService.decreaseLikeCount(productId);
+        productFacade.evictProductCache(productId);
     }
 
     @Transactional(readOnly = true)

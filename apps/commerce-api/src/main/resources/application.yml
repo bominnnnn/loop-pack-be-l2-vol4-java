@@ -28,6 +28,24 @@ jwt:
   secret: loopers_super_secret_key_must_be_at_least_32_characters
   expiration-days: 7
 
+pg:
+  base-url: http://localhost:9090
+  callback-url: http://localhost:8080/api/v1/payments/callback
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      pg:
+        failure-rate-threshold: 50
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        record-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+
 cors:
   allowed-origin: http://localhost:5173
 
@@ -41,6 +59,25 @@ spring:
   config:
     activate:
       on-profile: local, test
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 
 ---
 spring:
@@ -63,3 +100,8 @@ spring:
 springdoc:
   api-docs:
     enabled: false
+
+management:
+  health:
+    redis:
+      enabled: false

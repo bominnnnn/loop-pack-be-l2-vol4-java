@@ -2,6 +2,9 @@ package com.loopers.domain.product;
 
 import java.util.Optional;
 
+import java.util.List;
+import java.util.Map;
+
 public interface ProductStockRepository {
     ProductStock save(ProductStock productStock);
     /**
@@ -10,4 +13,6 @@ public interface ProductStockRepository {
      */
     Optional<ProductStock> findByProductIdWithLock(Long productId);
     Optional<ProductStock> findByProductId(Long productId);
+
+    Map<Long, ProductStock> findAllByProductIds(List<Long> productIds);
 }

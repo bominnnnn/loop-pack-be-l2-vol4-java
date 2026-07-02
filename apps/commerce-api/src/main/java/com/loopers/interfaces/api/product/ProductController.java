@@ -42,9 +42,10 @@ public class ProductController {
 
     @GetMapping
     public ApiResponse<List<ProductDto.ProductResponse>> getAllProducts(
-        @RequestParam(defaultValue = "LATEST") SortType sort
+        @RequestParam(defaultValue = "LATEST") SortType sort,
+        @RequestParam(required = false) Long brandId
     ) {
-        List<ProductInfo> infos = productFacade.getAllProducts(sort);
+        List<ProductInfo> infos = productFacade.getAllProducts(sort, brandId);
         return ApiResponse.success(infos.stream().map(ProductDto.ProductResponse::from).toList());
     }
 

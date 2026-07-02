@@ -27,8 +27,8 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductModel> getAllProducts(SortType sortType) {
-        return productRepository.findAll(sortType);
+    public List<ProductModel> getAllProducts(SortType sortType, Long brandId) {
+        return productRepository.findAll(sortType, brandId);
     }
 
     @Transactional

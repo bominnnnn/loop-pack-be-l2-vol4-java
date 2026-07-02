@@ -10,11 +10,29 @@ import java.util.Collections;
 import java.util.List;
 
 @Entity
-@Table(name = "orders")
+@Table(
+    name = "orders",
+    indexes = {
+        // 유저별 주문 내역 기간 조회
+        @Index(name = "idx_orders_user_created", columnList = "user_id, created_at DESC")
+    }
+)
 public class Order extends BaseEntity {
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    @Column(name = "coupon_id")
+    private Long couponId;
+
+    @Column(name = "original_price", nullable = false)
+    private Long originalPrice;
+
+    @Column(name = "discount_amount", nullable = false)
+    private Long discountAmount;
+
+    @Column(name = "total_price", nullable = false)
+    private Long totalPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -26,17 +44,25 @@ public class Order extends BaseEntity {
 
     protected Order() {}
 
-    public Order(Long userId, List<OrderItem> items) {
+    public Order(Long userId, Long couponId, Long originalPrice, Long discountAmount, Long totalPrice, List<OrderItem> items) {
         if (userId == null) {
             throw new CoreException(ErrorType.BAD_REQUEST, "유저 ID는 필수입니다.");
         }
         this.userId = userId;
+        this.couponId = couponId;
+        this.originalPrice = originalPrice;
+        this.discountAmount = discountAmount;
+        this.totalPrice = totalPrice;
         this.status = OrderStatus.PAID;
         validateItems(items);
         this.items.addAll(items);
     }
 
     public Long getUserId() { return userId; }
+    public Long getCouponId() { return couponId; }
+    public Long getOriginalPrice() { return originalPrice; }
+    public Long getDiscountAmount() { return discountAmount; }
+    public Long getTotalPrice() { return totalPrice; }
     public OrderStatus getStatus() { return status; }
     public List<OrderItem> getItems() { return Collections.unmodifiableList(items); }
 

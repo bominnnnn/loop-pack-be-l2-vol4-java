@@ -2,6 +2,10 @@ package com.loopers.application.order;
 
 import com.loopers.domain.brand.BrandReader;
 import com.loopers.domain.cart.CartService;
+import com.loopers.domain.coupon.CouponTemplate;
+import com.loopers.domain.coupon.CouponTemplateService;
+import com.loopers.domain.coupon.IssuedCoupon;
+import com.loopers.domain.coupon.IssuedCouponService;
 import com.loopers.domain.order.Order;
 import com.loopers.domain.order.OrderItem;
 import com.loopers.domain.order.OrderService;
@@ -27,16 +31,19 @@ public class OrderFacade {
     private final ProductStockService productStockService;
     private final CartService cartService;
     private final BrandReader brandReader;
+    private final CouponTemplateService couponTemplateService;
+    private final IssuedCouponService issuedCouponService;
 
     /**
      * 주문 생성 (단일 트랜잭션)
      * 1. 상품 존재 + 재고 확인
      * 2. 재고 차감
      * 3. 장바구니 항목 삭제
-     * 4. 주문 생성 (스냅샷 포함)
+     * 4. 쿠폰 적용 (optional)
+     * 5. 주문 생성 (스냅샷 포함)
      */
     @Transactional
-    public OrderInfo createOrder(Long userId, List<OrderRequest> requests) {
+    public OrderInfo createOrder(Long userId, Long couponId, List<OrderRequest> requests) {
         if (requests == null || requests.isEmpty()) {
             throw new CoreException(ErrorType.BAD_REQUEST, "주문 항목은 비어있을 수 없습니다.");
         }
@@ -55,7 +62,21 @@ public class OrderFacade {
                 .findFirst()
                 .ifPresent(c -> cartService.removeItem(c.getId(), userId)));
 
-        Order order = orderService.createOrder(userId, items);
+        long originalPrice = items.stream()
+            .mapToLong(item -> item.getSnapshot().getPrice() * item.getQuantity())
+            .sum();
+
+        long discountAmount = 0L;
+        long totalPrice = originalPrice;
+        if (couponId != null) {
+            IssuedCoupon issuedCoupon = issuedCouponService.getById(couponId);
+            CouponTemplate template = couponTemplateService.getById(issuedCoupon.getCouponTemplateId());
+            issuedCouponService.use(couponId, userId, template, originalPrice);
+            totalPrice = template.applyDiscount(originalPrice);
+            discountAmount = originalPrice - totalPrice;
+        }
+
+        Order order = orderService.createOrder(userId, couponId, originalPrice, discountAmount, totalPrice, items);
         return OrderInfo.from(order);
     }
 
@@ -75,6 +96,9 @@ public class OrderFacade {
     @Transactional
     public OrderInfo cancelOrder(Long orderId, Long userId) {
         Order order = orderService.cancelOrder(orderId, userId);
+        if (order.getCouponId() != null) {
+            issuedCouponService.restore(order.getCouponId());
+        }
         return OrderInfo.from(order);
     }
 

@@ -38,7 +38,7 @@ class OrderServiceTest {
         @DisplayName("정상 항목이면 PAID 상태로 저장된다.")
         @Test
         void creates_withPaidStatus() {
-            Order order = orderService.createOrder(1L, singleItem());
+            Order order = orderService.createOrder(1L, null, 100000L, 0L, 100000L, singleItem());
             assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
             assertThat(order.getId()).isNotNull();
         }
@@ -51,7 +51,7 @@ class OrderServiceTest {
         @DisplayName("존재하는 주문이면 반환된다.")
         @Test
         void returns_whenExists() {
-            Order saved = orderService.createOrder(1L, singleItem());
+            Order saved = orderService.createOrder(1L, null, 100000L, 0L, 100000L, singleItem());
             Order found = orderService.getOrder(saved.getId());
             assertThat(found.getId()).isEqualTo(saved.getId());
         }
@@ -72,7 +72,7 @@ class OrderServiceTest {
         @DisplayName("타인 주문 접근 시 BAD_REQUEST 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenNotOwner() {
-            Order saved = orderService.createOrder(1L, singleItem());
+            Order saved = orderService.createOrder(1L, null, 100000L, 0L, 100000L, singleItem());
             CoreException result = assertThrows(CoreException.class,
                 () -> orderService.getOrderForUser(saved.getId(), 2L));
             assertThat(result.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
@@ -86,7 +86,7 @@ class OrderServiceTest {
         @DisplayName("PAID 주문이면 CANCELLED로 변경된다.")
         @Test
         void cancels_whenPaid() {
-            Order saved = orderService.createOrder(1L, singleItem());
+            Order saved = orderService.createOrder(1L, null, 100000L, 0L, 100000L, singleItem());
             Order cancelled = orderService.cancelOrder(saved.getId(), 1L);
             assertThat(cancelled.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         }
@@ -94,7 +94,7 @@ class OrderServiceTest {
         @DisplayName("이미 취소된 주문은 BAD_REQUEST 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenAlreadyCancelled() {
-            Order saved = orderService.createOrder(1L, singleItem());
+            Order saved = orderService.createOrder(1L, null, 100000L, 0L, 100000L, singleItem());
             orderService.cancelOrder(saved.getId(), 1L);
 
             CoreException result = assertThrows(CoreException.class,
@@ -110,9 +110,9 @@ class OrderServiceTest {
         @DisplayName("해당 유저의 주문만 반환된다.")
         @Test
         void returns_ordersForUser() {
-            orderService.createOrder(1L, singleItem());
-            orderService.createOrder(1L, singleItem());
-            orderService.createOrder(2L, singleItem());
+            orderService.createOrder(1L, null, 100000L, 0L, 100000L, singleItem());
+            orderService.createOrder(1L, null, 100000L, 0L, 100000L, singleItem());
+            orderService.createOrder(2L, null, 100000L, 0L, 100000L, singleItem());
 
             List<Order> orders = orderService.getOrdersByPeriod(
                 1L,

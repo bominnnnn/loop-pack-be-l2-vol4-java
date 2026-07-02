@@ -9,6 +9,10 @@ import java.util.List;
 public record OrderInfo(
     Long orderId,
     Long userId,
+    Long couponId,
+    Long originalPrice,
+    Long discountAmount,
+    Long totalPrice,
     OrderStatus status,
     List<OrderItemInfo> items
 ) {
@@ -36,6 +40,10 @@ public record OrderInfo(
         return new OrderInfo(
             order.getId(),
             order.getUserId(),
+            order.getCouponId(),
+            order.getOriginalPrice(),
+            order.getDiscountAmount(),
+            order.getTotalPrice(),
             order.getStatus(),
             order.getItems().stream().map(OrderItemInfo::from).toList()
         );

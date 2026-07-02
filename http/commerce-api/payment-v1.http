@@ -1,0 +1,35 @@
+### 결제 요청 (POST /api/v1/payments)
+# PG에 결제 요청. CircuitBreaker 적용.
+# PG 장애 시 PENDING 상태로 반환 (Fallback).
+POST {{commerce-api}}/api/v1/payments
+Content-Type: application/json
+X-Loopers-LoginId: user1
+X-Loopers-LoginPw: password1
+
+{
+  "orderId": 1,
+  "cardType": "VISA",
+  "cardNo": "1234-5678-9012-3456"
+}
+
+### 결제 상태 조회 (GET /api/v1/payments/orders/{orderId})
+GET {{commerce-api}}/api/v1/payments/orders/1
+X-Loopers-LoginId: user1
+X-Loopers-LoginPw: password1
+
+### 결제 상태 수동 동기화 (POST /api/v1/payments/orders/{orderId}/sync)
+# 콜백이 오지 않은 PENDING 결제를 PG에 직접 조회하여 동기화
+POST {{commerce-api}}/api/v1/payments/orders/1/sync
+X-Loopers-LoginId: user1
+X-Loopers-LoginPw: password1
+
+### PG 콜백 시뮬레이션 (POST /api/v1/payments/callback)
+# PG 서버가 결제 결과를 비동기로 전송하는 엔드포인트
+POST {{commerce-api}}/api/v1/payments/callback
+Content-Type: application/json
+
+{
+  "pgTransactionId": "PG_TXN_20240101_001",
+  "orderId": 1,
+  "status": "APPROVED"
+}

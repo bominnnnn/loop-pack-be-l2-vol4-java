@@ -3,6 +3,8 @@ package com.loopers.application.order;
 import com.loopers.domain.brand.Brand;
 import com.loopers.domain.brand.BrandReader;
 import com.loopers.domain.cart.CartService;
+import com.loopers.domain.coupon.CouponTemplateService;
+import com.loopers.domain.coupon.IssuedCouponService;
 import com.loopers.domain.order.Order;
 import com.loopers.domain.order.OrderItem;
 import com.loopers.domain.order.OrderService;
@@ -28,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +41,8 @@ class OrderFacadeTest {
     @Mock ProductStockService productStockService;
     @Mock CartService cartService;
     @Mock BrandReader brandReader;
+    @Mock CouponTemplateService couponTemplateService;
+    @Mock IssuedCouponService issuedCouponService;
 
     @InjectMocks OrderFacade orderFacade;
 
@@ -55,19 +60,19 @@ class OrderFacadeTest {
             ReflectionTestUtils.setField(product, "id", 10L);
 
             Brand brand = new Brand("나이키");
-            Order order = new Order(1L, List.of(
+            Order order = new Order(1L, null, 100000L, 0L, 100000L, List.of(
                 new OrderItem(10L, 2, new ProductSnapshot("나이키 신발", 50000L, "나이키"))
             ));
 
             when(productReader.getProduct(10L)).thenReturn(product);
             when(brandReader.getBrand(1L)).thenReturn(brand);
             when(cartService.getCartItems(1L)).thenReturn(List.of());
-            when(orderService.createOrder(anyLong(), any())).thenReturn(order);
+            when(orderService.createOrder(anyLong(), any(), anyLong(), anyLong(), anyLong(), any())).thenReturn(order);
 
-            orderFacade.createOrder(1L, oneItemRequest);
+            orderFacade.createOrder(1L, null, oneItemRequest);
 
             verify(productStockService).decreaseStock(10L, 2);
-            verify(orderService).createOrder(eq(1L), any());
+            verify(orderService).createOrder(eq(1L), isNull(), anyLong(), anyLong(), anyLong(), any());
         }
 
         @DisplayName("존재하지 않는 상품이 포함된 경우, NOT_FOUND 예외가 발생한다.")
@@ -77,11 +82,11 @@ class OrderFacadeTest {
                 .thenThrow(new CoreException(ErrorType.NOT_FOUND, "상품을 찾을 수 없습니다."));
 
             CoreException result = assertThrows(CoreException.class,
-                () -> orderFacade.createOrder(1L, oneItemRequest));
+                () -> orderFacade.createOrder(1L, null, oneItemRequest));
 
             assertThat(result.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);
             verify(productStockService, never()).decreaseStock(anyLong(), anyInt());
-            verify(orderService, never()).createOrder(anyLong(), any());
+            verify(orderService, never()).createOrder(anyLong(), any(), anyLong(), anyLong(), anyLong(), any());
         }
 
         @DisplayName("재고가 부족한 경우, BAD_REQUEST 예외가 발생하고 주문이 생성되지 않는다.")
@@ -98,17 +103,17 @@ class OrderFacadeTest {
                 .when(productStockService).decreaseStock(10L, 2);
 
             CoreException result = assertThrows(CoreException.class,
-                () -> orderFacade.createOrder(1L, oneItemRequest));
+                () -> orderFacade.createOrder(1L, null, oneItemRequest));
 
             assertThat(result.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
-            verify(orderService, never()).createOrder(anyLong(), any());
+            verify(orderService, never()).createOrder(anyLong(), any(), anyLong(), anyLong(), anyLong(), any());
         }
 
         @DisplayName("주문 항목이 비어있는 경우, BAD_REQUEST 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenItemsEmpty() {
             CoreException result = assertThrows(CoreException.class,
-                () -> orderFacade.createOrder(1L, List.of()));
+                () -> orderFacade.createOrder(1L, null, List.of()));
 
             assertThat(result.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
         }

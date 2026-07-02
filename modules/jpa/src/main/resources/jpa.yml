@@ -35,6 +35,8 @@ spring.config.activate.on-profile: local
 
 spring:
   jpa:
+    # H2 가상 데이터베이스에 맞게 번역기(Dialect) 변경
+    database-platform: org.hibernate.dialect.H2Dialect
     show-sql: true
     hibernate:
       ddl-auto: create
@@ -42,9 +44,12 @@ spring:
 datasource:
   mysql-jpa:
     main:
-      jdbc-url: jdbc:mysql://localhost:3306/loopers
-      username: application
-      password: application
+      # 자바 코드(커스텀 빈)가 드라이버 클래스를 올바르게 읽도록 드라이버를 지정을 H2로 변경합니다.
+      driver-class-name: org.h2.Driver
+      # H2 가상 메모리 DB 주소로 변경합니다.
+      jdbc-url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+      username: sa
+      password: ""
 
 ---
 spring.config.activate.on-profile: test

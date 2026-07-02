@@ -24,7 +24,7 @@ public class OrderController {
         @AuthenticationPrincipal UserPrincipal principal,
         @RequestBody OrderDto.CreateOrderRequest request
     ) {
-        OrderInfo info = orderFacade.createOrder(principal.getId(), request.toOrderRequests());
+        OrderInfo info = orderFacade.createOrder(principal.getId(), request.couponId(), request.toOrderRequests());
         return ApiResponse.success(OrderDto.OrderResponse.from(info));
     }
 

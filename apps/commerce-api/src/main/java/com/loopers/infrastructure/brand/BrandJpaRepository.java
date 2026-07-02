@@ -10,5 +10,6 @@ public interface BrandJpaRepository extends JpaRepository<Brand, Long> {
     Optional<Brand> findByIdAndDeletedAtIsNull(Long id);
     Optional<Brand> findByNameAndDeletedAtIsNull(String name);
     List<Brand> findAllByDeletedAtIsNull();
+    List<Brand> findAllByIdIn(List<Long> ids);
     boolean existsByNameAndDeletedAtIsNull(String name);
 }

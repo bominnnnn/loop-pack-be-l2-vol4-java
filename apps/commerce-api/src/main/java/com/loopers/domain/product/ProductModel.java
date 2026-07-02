@@ -8,7 +8,19 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "products")
+@Table(
+    name = "products",
+    indexes = {
+        // 브랜드 필터 + 좋아요 순 정렬 (핵심 복합 인덱스)
+        @jakarta.persistence.Index(name = "idx_products_brand_likes", columnList = "deleted_at, brand_id, like_count DESC"),
+        // 좋아요 순 전체 정렬
+        @jakarta.persistence.Index(name = "idx_products_likes", columnList = "deleted_at, like_count DESC"),
+        // 최신순 정렬
+        @jakarta.persistence.Index(name = "idx_products_created", columnList = "deleted_at, created_at DESC"),
+        // 가격순 정렬
+        @jakarta.persistence.Index(name = "idx_products_price", columnList = "deleted_at, price")
+    }
+)
 public class ProductModel extends BaseEntity {
 
     @Column(nullable = false)

@@ -13,6 +13,8 @@ public interface ProductJpaRepository extends JpaRepository<ProductModel, Long> 
 
     List<ProductModel> findAllByDeletedAtIsNull(Sort sort);
 
+    List<ProductModel> findAllByDeletedAtIsNullAndBrandId(Long brandId, Sort sort);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProductModel p SET p.likeCount = p.likeCount + 1 WHERE p.id = :id")
     void increaseLikeCount(@Param("id") Long id);

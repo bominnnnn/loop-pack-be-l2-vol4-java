@@ -6,7 +6,7 @@ import java.util.Optional;
 public interface ProductRepository {
     ProductModel save(ProductModel product);
     Optional<ProductModel> find(Long id);
-    List<ProductModel> findAll(SortType sortType);
+    List<ProductModel> findAll(SortType sortType, Long brandId);
     void delete(Long id);
     void increaseLikeCount(Long productId);
     void decreaseLikeCount(Long productId);

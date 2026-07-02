@@ -16,8 +16,8 @@ public class OrderService {
     private final OrderRepository orderRepository;
 
     @Transactional
-    public Order createOrder(Long userId, List<OrderItem> items) {
-        return orderRepository.save(new Order(userId, items));
+    public Order createOrder(Long userId, Long couponId, Long originalPrice, Long discountAmount, Long totalPrice, List<OrderItem> items) {
+        return orderRepository.save(new Order(userId, couponId, originalPrice, discountAmount, totalPrice, items));
     }
 
     @Transactional(readOnly = true)
